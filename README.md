@@ -163,7 +163,6 @@ Apache 2.0,  free as in freedom and fast as in Go.
 
 ---
 
-
 <p align="center">
   <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/VincenzoManto/datacmd?style=social">
   <img alt="GitHub downloads" src="https://img.shields.io/github/downloads/VincenzoManto/datacmd/total">
