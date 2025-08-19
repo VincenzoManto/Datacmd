@@ -96,7 +96,7 @@ Customize via YAML, or let `--generate` do it all.
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/VincenzoMantodatacmd.git
+git clone https://github.com/VincenzoManto/datacmd.git
 cd datacmd
 go mod tidy
 ```
