@@ -165,15 +165,15 @@ Apache 2.0,  free as in freedom and fast as in Go.
 
 
 <p align="center">
-  <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/your-user/datacmd?style=social">
-  <img alt="GitHub downloads" src="https://img.shields.io/github/downloads/your-user/datacmd/total">
-  <img alt="Last commit" src="https://img.shields.io/github/last-commit/your-user/datacmd">
-  <img alt="GitHub License" src="https://img.shields.io/github/license/your-user/datacmd">
+  <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/VincenzoManto/datacmd?style=social">
+  <img alt="GitHub downloads" src="https://img.shields.io/github/downloads/VincenzoManto/datacmd/total">
+  <img alt="Last commit" src="https://img.shields.io/github/last-commit/VincenzoManto/datacmd">
+  <img alt="GitHub License" src="https://img.shields.io/github/license/VincenzoManto/datacmd">
 </p>
 
 <p align="center">
-  <a href="https://star-history.com/#your-user/datacmd&Date">
-    <img src="https://api.star-history.com/svg?repos=your-user/datacmd&type=Date" alt="Star History Chart">
+  <a href="https://star-history.com/#VincenzoManto/datacmd&Date">
+    <img src="https://api.star-history.com/svg?repos=VincenzoManto/datacmd&type=Date" alt="Star History Chart">
   </a>
 </p>
 
