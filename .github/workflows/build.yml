@@ -31,6 +31,9 @@ jobs:
         id: get_tag
         run: echo "TAG_NAME=${GITHUB_REF}"
 
+      - name: Set up Go Modules
+        run: go mod tidy
+
        
       - name: Build for Linux
         run: |
