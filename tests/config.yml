@@ -1,0 +1,36 @@
+title: System Metrics Dashboard
+refresh: 5
+source:
+  type: system
+  path: cpu
+widgets:
+- type: table
+  title: Table
+  columns:
+  - title: Metric Name
+    dataIndex: metric_name
+  - title: Value
+    dataIndex: value
+- type: pie
+  title: Pie Chart (value)
+  value_col: value
+  label_col: metric_name
+- type: bar
+  title: Bar Chart (value)
+  x_col: metric_name
+  y_col: value
+- type: line
+  title: Line Chart (value)
+  x_col: metric_name
+  y_col: value
+- type: radar
+  title: Radar Chart (value)
+  value_col: value
+  cat_col: metric_name
+- type: gauge
+  title: Gauge (value)
+  value_col: value
+- type: text
+  title: Text (value - Sum)
+  value_col: value
+  aggregation: sum

@@ -1,0 +1,43 @@
+title: Auto Dashboard for csv
+refresh: 5
+source:
+    type: csv
+    path: sample.csv
+widgets:
+    - type: table
+      title: Table
+      columns:
+        - title: Label
+          dataIndex: label
+        - title: Value
+          dataIndex: value
+        - title: Category
+          dataIndex: category
+    - type: pie
+      title: Pie Chart
+      value_col: value
+      label_col: label
+    - type: donut
+      title: Donut Chart
+      value_col: value
+      label_col: label
+    - type: gauge
+      title: Gauge
+      value_col: value
+    - type: line
+      title: Line Chart
+      x_col: label
+      y_col: value
+
+    - type: bar
+      title: Bar Chart
+      x_col: label
+      y_col: value
+    - type: radar
+      title: Radar Chart
+      cat_col: category
+      value_col: value
+    - type: text
+      title: Text Widget
+      aggregation: sum
+      value_col: value
