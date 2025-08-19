@@ -21,9 +21,9 @@ Tired of bloated web UIs? `datacmd` brings data visualization back to where real
 
 ---
 
-## ✨ Live Demo
+## ✨ Demo
 
-![demo-gif](demo.gif)  
+![screen-gif](doc/screen.png)  
 <sub>📈 Realtime stock tracker via `datacmd --source=stock.json`</sub>
 
 ---
@@ -61,7 +61,7 @@ go run main.go --generate --source=your-data.csv
 ```
 
 
-## 🧠 How It Works
+## 🧠 How it works
 
 ```bash
 # Auto-generate a dashboard from any CSV or JSON
@@ -80,7 +80,7 @@ Data sources supported:
 
 ---
 
-## 🧩 Widgets You Can Use
+## 🧩 Widgets you can use
 
 * 📋 **Table** – Paginated, sortable
 * 🎯 **Gauge** – Perfect for usage stats, thresholds
