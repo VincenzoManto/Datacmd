@@ -1,4 +1,3 @@
-
 name: Build & Release
 
 on:
@@ -10,13 +9,10 @@ on:
 permissions:
   contents: write
 
- 
 jobs:
   build:
-     
     runs-on: ubuntu-latest
-    
-     
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -24,48 +20,45 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'  
-
-       
+          go-version: '1.22'
+      
+      # This step sets the TAG_NAME environment variable for subsequent steps.
       - name: Get Tag Name
         id: get_tag
         run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-        env:
-          GITHUB_REF: ${{ github.ref }}
-
+      
       - name: Set up Go Modules
         run: go mod tidy
 
-       
+      # Build for Linux (amd64)
       - name: Build for Linux
         run: |
           GOOS=linux GOARCH=amd64 go build -o datacmd-linux
           chmod +x datacmd-linux
 
-       
-       
+      # Build for Windows (amd64)
       - name: Build for Windows
         run: |
           GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o datacmd-windows.exe
 
-       
+      # Build for macOS (amd64)
       - name: Build for macOS
         run: |
           GOOS=darwin GOARCH=amd64 go build -o datacmd-macos
 
-       
+      # Create the GitHub Release
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+        with:
           tag_name: ${{ env.TAG_NAME }}
           release_name: Release ${{ env.TAG_NAME }}
           draft: false
           prerelease: false
 
-       
+      # Upload the built binary for Linux to the release
       - name: Upload Linux Asset
         uses: actions/upload-release-asset@v1
         env:
@@ -76,6 +69,7 @@ jobs:
           asset_name: datacmd-linux
           asset_content_type: application/octet-stream
 
+      # Upload the built binary for Windows to the release
       - name: Upload Windows Asset
         uses: actions/upload-release-asset@v1
         env:
@@ -86,6 +80,7 @@ jobs:
           asset_name: datacmd-windows.exe
           asset_content_type: application/octet-stream
       
+      # Upload the built binary for macOS to the release
       - name: Upload macOS Asset
         uses: actions/upload-release-asset@v1
         env:
