@@ -29,7 +29,7 @@ jobs:
        
       - name: Get Tag Name
         id: get_tag
-        run: echo "TAG_NAME=${GITHUB_REF}
+        run: echo "TAG_NAME=${GITHUB_REF}"
 
        
       - name: Build for Linux
