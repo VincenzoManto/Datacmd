@@ -13,7 +13,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// Config holds the dashboard configuration from a YAML file.
 type Config struct {
 	Title   string `yaml:"title"`
 	Refresh int    `yaml:"refresh"`
@@ -21,7 +20,6 @@ type Config struct {
 	Widgets []WidgetConfig `yaml:"widgets"`
 }
 
-// WidgetConfig holds the configuration for a single widget.
 type WidgetConfig struct {
 	Type     string `yaml:"type"`
 	Title    string `yaml:"title"`
@@ -29,9 +27,9 @@ type WidgetConfig struct {
 	LabelCol string `yaml:"label_col,omitempty"`
 	XCol     string `yaml:"x_col,omitempty"`
 	YCol     string `yaml:"y_col,omitempty"`
-	ZCol     string `yaml:"z_col,omitempty"` // Per i grafici non supportati in questa versione, ma per completezza.
-	CatCol   string `yaml:"cat_col,omitempty"` // Per i grafici non supportati in questa versione, ma per completezza.
-	Aggregation string `yaml:"aggregation,omitempty"` // Tipo di aggregazione (max, min, avg)
+	ZCol     string `yaml:"z_col,omitempty"` 
+	CatCol   string `yaml:"cat_col,omitempty"` 
+	Aggregation string `yaml:"aggregation,omitempty"` 
 }
 
 
@@ -46,15 +44,10 @@ type DataDataSource struct {
 	Records [][]string
 }
 
-// --- Definizione dell'interfaccia DataSource ---
-// DataSource definisce il contratto per qualsiasi sorgente di dati.
 type DataSource interface {
 	Load() (*DataDataSource, error)
 }
 
-// --- Implementazioni dell'interfaccia DataSource ---
-
-// CSVDataSource gestisce il caricamento dei dati da un file CSV.
 type CSVDataSource struct {
 	Path string
 }
@@ -62,18 +55,18 @@ type CSVDataSource struct {
 func (c *CSVDataSource) Load() (*DataDataSource, error) {
 	file, err := os.Open(c.Path)
 	if err != nil {
-		return nil, fmt.Errorf("impossibile aprire il file CSV: %w", err)
+		return nil, fmt.Errorf("Unable to open CSV file: %w", err)
 	}
 	defer file.Close()
 
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
 	if err != nil {
-		return nil, fmt.Errorf("impossibile leggere il file CSV: %w", err)
+		return nil, fmt.Errorf("Unable to read CSV file: %w", err)
 	}
 
 	if len(records) < 1 {
-		return nil, fmt.Errorf("il file CSV è vuoto")
+		return nil, fmt.Errorf("CSV file is empty")
 	}
 
 	header := records[0]
@@ -82,14 +75,13 @@ func (c *CSVDataSource) Load() (*DataDataSource, error) {
 	data.Records = make([][]string, 0, len(records)-1)
 	for _, record := range records[1:] {
 		if len(record) != len(header) {
-			return nil, fmt.Errorf("record con numero di colonne non corrispondente all'intestazione: %v", record)
+			return nil, fmt.Errorf("record with number of columns not matching header: %v", record)
 		}
 		data.Records = append(data.Records, record)
 	}
 	return &data, nil
 }
 
-// JSONDataSource gestisce il caricamento dei dati da un file JSON.
 type JSONDataSource struct {
 	Path string
 }
@@ -97,17 +89,17 @@ type JSONDataSource struct {
 func (j *JSONDataSource) Load() (*DataDataSource, error) {
 	fileData, err := os.ReadFile(j.Path)
 	if err != nil {
-		return nil, fmt.Errorf("impossibile leggere il file JSON: %w", err)
+		return nil, fmt.Errorf("Unable to read JSON file: %w", err)
 	}
 
 	var data DataDataSource
 	if err := json.Unmarshal(fileData, &data); err != nil {
-		return nil, fmt.Errorf("impossibile analizzare il file JSON: %w", err)
+		return nil, fmt.Errorf("Unable to parse JSON file: %w", err)
 	}
 	return &data, nil
 }
 
-// APIDataSource gestisce il caricamento dei dati da un'API.
+
 type APIDataSource struct {
 	URL string
 }
@@ -115,38 +107,38 @@ type APIDataSource struct {
 func (a *APIDataSource) Load() (*DataDataSource, error) {
 	resp, err := http.Get(a.URL)
 	if err != nil {
-		return nil, fmt.Errorf("impossibile effettuare la richiesta all'API: %w", err)
+		return nil, fmt.Errorf("Unable to make API request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("risposta API non riuscita, codice di stato: %d", resp.StatusCode)
+		return nil, fmt.Errorf("API response failed, status code: %d", resp.StatusCode)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("impossibile leggere il corpo della risposta: %w", err)
+		return nil, fmt.Errorf("Unable to read response body: %w", err)
 	}
 
 	var data DataDataSource
 	if err := json.Unmarshal(body, &data); err != nil {
-		return nil, fmt.Errorf("impossibile decodificare la risposta JSON dell'API: %w", err)
+		return nil, fmt.Errorf("Unable to decode API JSON response: %w", err)
 	}
 	return &data, nil
 }
 
-// SystemMetricsDataSource gestisce il caricamento delle metriche di sistema.
+// SystemMetricsDataSource handles loading system metrics.
 type SystemMetricsDataSource struct{}
 
 func (s *SystemMetricsDataSource) Load() (*DataDataSource, error) {
 	v, err := mem.VirtualMemory()
 	if err != nil {
-		return nil, fmt.Errorf("impossibile ottenere la memoria virtuale: %w", err)
+		return nil, fmt.Errorf("Unable to get virtual memory: %w", err)
 	}
 
 	c, err := cpu.Percent(0, false)
 	if err != nil {
-		return nil, fmt.Errorf("impossibile ottenere l'utilizzo della CPU: %w", err)
+		return nil, fmt.Errorf("Unable to get CPU usage: %w", err)
 	}
 
 	data := DataDataSource{
@@ -164,12 +156,12 @@ func (s *SystemMetricsDataSource) Load() (*DataDataSource, error) {
 func LoadConfigAndData(configPath string) (*Config, *DataDataSource, error) {
 	configData, err := os.ReadFile(configPath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("impossibile leggere il file di configurazione: %w", err)
+		return nil, nil, fmt.Errorf("Unable to read config file: %w", err)
 	}
 
 	var config Config
 	if err := yaml.Unmarshal(configData, &config); err != nil {
-		return nil, nil, fmt.Errorf("impossibile analizzare il file di configurazione YAML: %w", err)
+		return nil, nil, fmt.Errorf("Unable to parse YAML config file: %w", err)
 	}
 
 	var dataSource DataSource
@@ -183,15 +175,13 @@ func LoadConfigAndData(configPath string) (*Config, *DataDataSource, error) {
 	case "system":
 		dataSource = &SystemMetricsDataSource{}
 	default:
-		return nil, nil, fmt.Errorf("tipo di sorgente dati non supportato: %s", config.Source.Type)
-	}
-    
-    // Assegna i valori di ritorno a variabili e gestisci l'errore
-	data, err := dataSource.Load()
-	if err != nil {
-		return nil, nil, err // Restituisci l'errore se il caricamento fallisce
+		return nil, nil, fmt.Errorf("Unsupported data source type: %s", config.Source.Type)
 	}
 
-    // Se tutto va bene, restituisci i tre valori attesi
+	data, err := dataSource.Load()
+	if err != nil {
+		return nil, nil, err 
+	}
+
 	return &config, data, nil
 }

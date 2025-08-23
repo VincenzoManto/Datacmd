@@ -52,7 +52,13 @@ func main() {
 	configPath := flag.String("config", "config.yml", "Path to the YAML configuration file.")
 	sourcePath := flag.String("source", "", "Path to the data source file or URL.")
 	generatePtr := flag.Bool("generate", false, "Generate a dashboard configuration based on the provided source type and path.")
+	helpPtr := flag.Bool("help", false, "Show help information.")
 	flag.Parse()
+
+	if *helpPtr {
+		flag.Usage()
+		return
+	}
 
 	// if --config is provided load it
 	// if --generate is provided, call GenerateDashboardConfig and then load the generated config
