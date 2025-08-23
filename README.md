@@ -1,3 +1,5 @@
+![](https://goreportcard.com/report/github.com/VincenzoManto/Datacmd)
+
 
 # 🪄 Datacmd: auto-generative dashboards from different sources in your CMD
 
