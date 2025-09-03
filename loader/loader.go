@@ -14,24 +14,23 @@ import (
 )
 
 type Config struct {
-	Title   string `yaml:"title"`
-	Refresh int    `yaml:"refresh"`
-	Source  Source `yaml:"source"`
+	Title   string         `yaml:"title"`
+	Refresh int            `yaml:"refresh"`
+	Source  Source         `yaml:"source"`
 	Widgets []WidgetConfig `yaml:"widgets"`
 }
 
 type WidgetConfig struct {
-	Type     string `yaml:"type"`
-	Title    string `yaml:"title"`
-	ValueCol string `yaml:"value_col,omitempty"`
-	LabelCol string `yaml:"label_col,omitempty"`
-	XCol     string `yaml:"x_col,omitempty"`
-	YCol     string `yaml:"y_col,omitempty"`
-	ZCol     string `yaml:"z_col,omitempty"` 
-	CatCol   string `yaml:"cat_col,omitempty"` 
-	Aggregation string `yaml:"aggregation,omitempty"` 
+	Type        string `yaml:"type"`
+	Title       string `yaml:"title"`
+	ValueCol    string `yaml:"value_col,omitempty"`
+	LabelCol    string `yaml:"label_col,omitempty"`
+	XCol        string `yaml:"x_col,omitempty"`
+	YCol        string `yaml:"y_col,omitempty"`
+	ZCol        string `yaml:"z_col,omitempty"`
+	CatCol      string `yaml:"cat_col,omitempty"`
+	Aggregation string `yaml:"aggregation,omitempty"`
 }
-
 
 type Source struct {
 	Type string `yaml:"type"`
@@ -99,7 +98,6 @@ func (j *JSONDataSource) Load() (*DataDataSource, error) {
 	return &data, nil
 }
 
-
 type APIDataSource struct {
 	URL string
 }
@@ -152,7 +150,6 @@ func (s *SystemMetricsDataSource) Load() (*DataDataSource, error) {
 	return &data, nil
 }
 
-
 func LoadConfigAndData(configPath string) (*Config, *DataDataSource, error) {
 	configData, err := os.ReadFile(configPath)
 	if err != nil {
@@ -180,7 +177,7 @@ func LoadConfigAndData(configPath string) (*Config, *DataDataSource, error) {
 
 	data, err := dataSource.Load()
 	if err != nil {
-		return nil, nil, err 
+		return nil, nil, err
 	}
 
 	return &config, data, nil

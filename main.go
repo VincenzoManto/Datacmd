@@ -1,15 +1,12 @@
 package main
 
 import (
-		"context"
+	"context"
+	"datacmd/generate"
+	"datacmd/loader"
+	"datacmd/widgets"
 	"flag"
 	"fmt"
-	"log"
-	"strconv"
-	"os"
-	"time"
-	"sort"
-"github.com/mum4k/termdash/widgets/segmentdisplay"
 	"github.com/mum4k/termdash"
 	"github.com/mum4k/termdash/cell"
 	"github.com/mum4k/termdash/container"
@@ -19,19 +16,21 @@ import (
 	"github.com/mum4k/termdash/terminal/tcell"
 	"github.com/mum4k/termdash/terminal/termbox"
 	"github.com/mum4k/termdash/terminal/terminalapi"
+	"github.com/mum4k/termdash/widgetapi"
 	"github.com/mum4k/termdash/widgets/barchart"
 	"github.com/mum4k/termdash/widgets/donut"
 	"github.com/mum4k/termdash/widgets/gauge"
 	"github.com/mum4k/termdash/widgets/linechart"
+	"github.com/mum4k/termdash/widgets/segmentdisplay"
 	"github.com/mum4k/termdash/widgets/sparkline"
 	"github.com/mum4k/termdash/widgets/text"
-	"github.com/mum4k/termdash/widgetapi"
-	"datacmd/widgets"
-	"datacmd/loader"
-	"datacmd/generate"
 	"gopkg.in/yaml.v2"
+	"log"
+	"os"
+	"sort"
+	"strconv"
+	"time"
 )
-
 
 // redrawInterval is how often termdash redraws the screen.
 const redrawInterval = 250 * time.Millisecond
@@ -195,7 +194,6 @@ func createWidgets(ctx context.Context, config *loader.Config, csvData *loader.D
 	return widgets, nil
 }
 
-
 // dynamicGridLayout builds the grid layout dynamically based on the created widgets.
 func dynamicGridLayout(widgets map[string]interface{}, config *loader.Config) ([]container.Option, error) {
 	builder := grid.New()
@@ -226,16 +224,16 @@ func dynamicGridLayout(widgets map[string]interface{}, config *loader.Config) ([
 		title   string
 	}
 	widgetList := []widgetWithConfig{}
-	
+
 	// Ensure the order of widgets is consistent with the config.
 	widgetConfigs := config.Widgets
-	
+
 	for _, conf := range widgetConfigs {
 		widget, ok := widgets[conf.Title].(widgetapi.Widget)
 		if !ok {
 			return nil, fmt.Errorf("the widget '%s' is not a valid widget", conf.Title)
 		}
-		
+
 		opts := []container.Option{
 			container.Border(linestyle.Light),
 			container.BorderTitle(conf.Title),
@@ -246,12 +244,12 @@ func dynamicGridLayout(widgets map[string]interface{}, config *loader.Config) ([
 			title:   conf.Title,
 		})
 	}
-	
+
 	// Use a slice to build rows dynamically.
 	var rows [][]grid.Element
 	var currentRow []grid.Element
 	currentWidth := 0
-	
+
 	for _, w := range widgetList {
 		var widgetWidth int
 		switch w.typ {
@@ -260,14 +258,13 @@ func dynamicGridLayout(widgets map[string]interface{}, config *loader.Config) ([
 		default:
 			widgetWidth = 50
 		}
-		
+
 		// If adding the new widget exceeds 100%, start a new row.
 		if currentWidth+widgetWidth > 100 && len(currentRow) > 0 {
-			
-			
+
 			// Append the new row to the list of rows.
 			rows = append(rows, currentRow)
-			
+
 			// Start a new row with the current widget.
 			currentRow = []grid.Element{grid.ColWidthPerc(widgetWidth, w.element)}
 			currentWidth = widgetWidth
@@ -277,7 +274,7 @@ func dynamicGridLayout(widgets map[string]interface{}, config *loader.Config) ([
 			currentWidth += widgetWidth
 		}
 	}
-	
+
 	// Add the last row if it's not empty.
 	if len(currentRow) > 0 {
 		rows = append(rows, currentRow)
@@ -297,6 +294,7 @@ func dynamicGridLayout(widgets map[string]interface{}, config *loader.Config) ([
 	}
 	return gridOpts, nil
 }
+
 // periodic executes the provided closure periodically every interval.
 func periodic(ctx context.Context, interval time.Duration, fn func() error) {
 	ticker := time.NewTicker(interval)
@@ -467,7 +465,7 @@ func createBarChart(ctx context.Context, w *loader.WidgetConfig, csvData *loader
 	if err != nil {
 		return nil, err
 	}
-	
+
 	go periodic(ctx, time.Duration(refresh)*time.Second, func() error {
 		var values []int
 		for _, record := range csvData.Records {
@@ -479,7 +477,7 @@ func createBarChart(ctx context.Context, w *loader.WidgetConfig, csvData *loader
 		}
 		return bc.Values(values, 100)
 	})
-	
+
 	return bc, nil
 }
 
@@ -543,8 +541,8 @@ func createPieChart(ctx context.Context, w *loader.WidgetConfig, csvData *loader
 	// Definisci i colori per le fette. Devi specificarne uno per ogni fetta.
 	// Se hai più fette che colori, i colori si ripeteranno.
 	colors := []cell.Color{
-		cell.ColorNumber(42), 
-		cell.ColorNumber(197), 
+		cell.ColorNumber(42),
+		cell.ColorNumber(197),
 		cell.ColorNumber(214),
 		cell.ColorNumber(255),
 		cell.ColorNumber(39),
@@ -656,7 +654,6 @@ func rollText(ctx context.Context, sd *segmentdisplay.SegmentDisplay, text strin
 	}
 }
 
-
 func createRadarChart(ctx context.Context, w *loader.WidgetConfig, csvData *loader.DataDataSource, refresh int) (*widgets.Radar, error) {
 	data := make(map[string]float64)
 	for _, record := range csvData.Records {
@@ -674,17 +671,16 @@ func createRadarChart(ctx context.Context, w *loader.WidgetConfig, csvData *load
 			max = value
 		}
 	}
-	
+
 	if len(data) == 0 {
 		return nil, fmt.Errorf("no valid data found for radar chart")
 	}
 
 	values := &widgets.Values{
 		Data: data,
-		Max: max,
+		Max:  max,
 	}
 
-	
 	r, err := widgets.NewRadar()
 	if err != nil {
 		return nil, err

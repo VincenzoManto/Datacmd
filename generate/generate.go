@@ -18,9 +18,9 @@ import (
 
 // Config holds the dashboard configuration.
 type Config struct {
-	Title   string `yaml:"title"`
-	Refresh int    `yaml:"refresh"`
-	Source  Source `yaml:"source"`
+	Title   string         `yaml:"title"`
+	Refresh int            `yaml:"refresh"`
+	Source  Source         `yaml:"source"`
 	Widgets []WidgetConfig `yaml:"widgets"`
 }
 
@@ -33,14 +33,14 @@ type Source struct {
 
 // WidgetConfig holds the configuration for a single widget.
 type WidgetConfig struct {
-	Type        string `yaml:"type"`
-	Title       string `yaml:"title"`
-	ValueCol    string `yaml:"value_col,omitempty"`
-	LabelCol    string `yaml:"label_col,omitempty"`
-	XCol        string `yaml:"x_col,omitempty"`
-	YCol        string `yaml:"y_col,omitempty"`
-	CatCol      string `yaml:"cat_col,omitempty"`
-	Aggregation string `yaml:"aggregation,omitempty"`
+	Type        string        `yaml:"type"`
+	Title       string        `yaml:"title"`
+	ValueCol    string        `yaml:"value_col,omitempty"`
+	LabelCol    string        `yaml:"label_col,omitempty"`
+	XCol        string        `yaml:"x_col,omitempty"`
+	YCol        string        `yaml:"y_col,omitempty"`
+	CatCol      string        `yaml:"cat_col,omitempty"`
+	Aggregation string        `yaml:"aggregation,omitempty"`
 	Columns     []TableColumn `yaml:"columns,omitempty"`
 }
 
@@ -50,7 +50,6 @@ type TableColumn struct {
 	DataIndex string `yaml:"dataIndex"`
 }
 
-// --- Interfaces and implementations for data loading (based on your loader) ---
 
 // DataDataSource holds the loaded data.
 type DataDataSource struct {
@@ -161,8 +160,6 @@ func (s *SystemMetricsDataSource) Load() (*DataDataSource, error) {
 	return &data, nil
 }
 
-// --- Main logic of autogen.go ---
-
 // isNumeric checks if a string can be parsed as a float.
 func isNumeric(s string) bool {
 	_, err := strconv.ParseFloat(s, 64)
@@ -212,13 +209,11 @@ func GenerateDashboardConfig(sourcePath string) (*Config, error) {
 		return nil, fmt.Errorf("error: unsupported data source type: %s", sourceType)
 	}
 
-	// Load the data
 	data, err := dataSource.Load()
 	if err != nil {
 		return nil, fmt.Errorf("error loading data: %w", err)
 	}
 
-	// Column analysis (numeric vs. categorical)
 	numericCols := make(map[string]bool)
 	var firstNumericCol string
 	var firstCategoricCol string
@@ -226,7 +221,6 @@ func GenerateDashboardConfig(sourcePath string) (*Config, error) {
 	for _, header := range data.Header {
 		isNum := false
 		if len(data.Records) > 0 {
-			// Check the first 5 records to determine the column type
 			for i := 0; i < 5 && i < len(data.Records); i++ {
 				colIndex := -1
 				for j, h := range data.Header {
@@ -255,10 +249,8 @@ func GenerateDashboardConfig(sourcePath string) (*Config, error) {
 		}
 	}
 
-	// Configuration generation
 	var widgets []WidgetConfig
 
-	// Table Widget (always present)
 	tableCols := []TableColumn{}
 	for _, header := range data.Header {
 		tableCols = append(tableCols, TableColumn{
@@ -272,7 +264,6 @@ func GenerateDashboardConfig(sourcePath string) (*Config, error) {
 		Columns: tableCols,
 	})
 
-	// Generate widgets based on data analysis
 	for _, header := range data.Header {
 		isNum := numericCols[header]
 
@@ -287,16 +278,16 @@ func GenerateDashboardConfig(sourcePath string) (*Config, error) {
 					LabelCol: firstCategoricCol,
 				})
 				widgets = append(widgets, WidgetConfig{
-					Type:     "bar",
-					Title:    fmt.Sprintf("Bar Chart (%s)", header),
-					XCol:     firstCategoricCol,
-					YCol:     header,
+					Type:  "bar",
+					Title: fmt.Sprintf("Bar Chart (%s)", header),
+					XCol:  firstCategoricCol,
+					YCol:  header,
 				})
 				widgets = append(widgets, WidgetConfig{
-					Type:     "line",
-					Title:    fmt.Sprintf("Line Chart (%s)", header),
-					XCol:     firstCategoricCol,
-					YCol:     header,
+					Type:  "line",
+					Title: fmt.Sprintf("Line Chart (%s)", header),
+					XCol:  firstCategoricCol,
+					YCol:  header,
 				})
 				widgets = append(widgets, WidgetConfig{
 					Type:     "radar",
@@ -321,7 +312,6 @@ func GenerateDashboardConfig(sourcePath string) (*Config, error) {
 		}
 	}
 
-	// Create the final configuration object
 	config := &Config{
 		Title:   sourceTitle,
 		Refresh: 5,

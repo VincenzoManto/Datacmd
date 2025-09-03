@@ -15,6 +15,8 @@ import (
 	"github.com/mum4k/termdash/widgetapi"
 )
 
+// probably it will be substituted with my termdash/pie once approved by murr (please approve my PR)
+
 // PieChart displays data as a pie chart.
 // Each value is a proportion of the total sum.
 type PieChart struct {
@@ -104,8 +106,6 @@ func (p *PieChart) Draw(cvs *canvas.Canvas, meta *widgetapi.Meta) error {
 
 	mid, radiusX, radiusY := pieChartMidAndRadii(cvs.Area())
 
-	// Define the inner radius for the donut hole.
-	// We'll increase this value to make the hole bigger.
 	innerRadiusX := int(float64(radiusX) * 0.6)
 	innerRadiusY := int(float64(radiusY) * 0.6)
 
@@ -113,18 +113,14 @@ func (p *PieChart) Draw(cvs *canvas.Canvas, meta *widgetapi.Meta) error {
 	for i, value := range p.values {
 		endAngle := currentAngle + float64(value)/float64(p.total)*2*math.Pi
 		color := p.colors[i%len(p.colors)]
-		
-		// Draw a series of radial lines from the inner radius to the outer radius.
-		// This creates the filled "slice" of the donut.
-		for angle := currentAngle; angle < endAngle; angle += 0.01 { // Small increment for dense lines
-			// Calculate the start point of the line on the inner radius.
+
+		for angle := currentAngle; angle < endAngle; angle += 0.01 { 
 			startX := mid.X + int(float64(innerRadiusX)*math.Cos(angle))
 			startY := mid.Y + int(float64(innerRadiusY)*math.Sin(angle))
-			
-			// Calculate the end point of the line on the outer radius.
+
 			endX := mid.X + int(float64(radiusX)*math.Cos(angle))
 			endY := mid.Y + int(float64(radiusY)*math.Sin(angle))
-			
+
 			startPoint := image.Point{X: startX, Y: startY}
 			endPoint := image.Point{X: endX, Y: endY}
 

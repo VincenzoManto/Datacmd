@@ -74,9 +74,8 @@ func midAndRadii(ar image.Rectangle) (image.Point, int, int) {
 	width := ar.Dx() * braille.ColMult
 	height := ar.Dy() * braille.RowMult
 
-	// Ora calcoliamo i due raggi indipendentemente per riempire lo spazio.
-	radiusX := width/2 - 2 // Margine di sicurezza
-	radiusY := height/2 - 2 // Margine di sicurezza
+	radiusX := width/2 - 2  
+	radiusY := height/2 - 2 
 	if radiusX < 1 {
 		radiusX = 1
 	}
@@ -90,7 +89,7 @@ func midAndRadii(ar image.Rectangle) (image.Point, int, int) {
 	return mid, radiusX, radiusY
 }
 
-// A hypothetical `Values` struct to hold the data for the chart.
+
 type Values struct {
 	// A map to store the value for each axis, using a string label as the key.
 	Data map[string]float64
@@ -99,8 +98,6 @@ type Values struct {
 }
 
 // Radar displays multivariate data on a radar chart.
-//
-// Implements widgetapi.Widget. This object is thread-safe.
 type Radar struct {
 	mu sync.Mutex
 
@@ -167,11 +164,9 @@ func (r *Radar) Draw(cvs *canvas.Canvas, meta *widgetapi.Meta) error {
 	if err != nil {
 		return fmt.Errorf("braille.New => %v", err)
 	}
-
-	// Ora usiamo midAndRadii per ottenere i due raggi.
+	
 	mid, radiusX, radiusY := midAndRadii(cvs.Area())
 
-	// draw external circle
 	if err := draw.BrailleCircle(bc, mid, radiusX,
 		draw.BrailleCircleCellOpts(r.opts.axisCellOpts...)); err != nil {
 		return fmt.Errorf("failed to draw external circle: %v", err)
@@ -192,7 +187,6 @@ func (r *Radar) Draw(cvs *canvas.Canvas, meta *widgetapi.Meta) error {
 		value := r.values.Data[label]
 		angle := float64(i)*angleStep - math.Pi/2
 
-		// Usa radiusX e radiusY per un'ellisse.
 		endX := mid.X + int(float64(radiusX)*math.Cos(angle))
 		endY := mid.Y + int(float64(radiusY)*math.Sin(angle))
 

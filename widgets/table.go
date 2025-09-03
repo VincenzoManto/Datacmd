@@ -1,18 +1,3 @@
-// Copyright 2019 Google Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-// Package widgets implements an interactive widget that displays data in rows and columns.
 package widgets
 
 import (
@@ -43,32 +28,29 @@ func NewCell(text string) *Cell {
 }
 
 // Table displays data in a grid of rows and columns.
-//
-// Implements widgetapi.Widget. This object is thread-safe.
 type Table struct {
-	// headers are the column headers.
+	
 	headers []*Cell
-	// rows are the data rows.
+	
 	rows [][]*Cell
 
-	// mu protects the widget.
+	
 	mu sync.Mutex
-
-	// opts are the provided tableOptions.
+	
 	opts *tableOptions
 
-	// currentPage is the zero-indexed page currently being displayed.
+	
 	currentPage int
-	// rowsPerPage is the maximum number of rows to display per page.
+	
 	rowsPerPage int
-	// numPages is the total number of pages.
+	
 	numPages int
 
-	// prevButton e nextButton sono i widget dei pulsanti.
+	
 	prevButton *button.Button
 	nextButton *button.Button
 
-	// prevButtonRect e nextButtonRect are the areas where the buttons are drawn.
+	
 	prevButtonRect image.Rectangle
 	nextButtonRect image.Rectangle
 }
@@ -100,9 +82,8 @@ func NewTable(headers []*Cell, rows [][]*Cell, opts ...TableOption) (*Table, err
 		numPages = int(math.Ceil(float64(numRows) / float64(opt.rowsPerPage)))
 	}
 	if numPages == 0 && numRows > 0 {
-		numPages = 1 // At least one page if there are rows.
+		numPages = 1
 	}
-
 
 	t := &Table{
 		headers:     headers,
@@ -174,7 +155,7 @@ func (t *Table) Draw(cvs *canvas.Canvas, meta *widgetapi.Meta) error {
 	if endIndex > len(t.rows) {
 		endIndex = len(t.rows)
 	}
-	
+
 	// Handle the case where the current page has no content.
 	// This can happen if rows are removed, so we reset the page.
 	if startIndex >= len(t.rows) && len(t.rows) > 0 {
@@ -202,7 +183,7 @@ func (t *Table) Draw(cvs *canvas.Canvas, meta *widgetapi.Meta) error {
 
 		// Calculate the area for the pagination row.
 		paginationAr := image.Rect(cvsAr.Min.X, cvsAr.Max.Y-1, cvsAr.Max.X, cvsAr.Max.Y)
-		
+
 		// Draw prev button manually with styling
 		t.prevButtonRect = image.Rect(paginationAr.Min.X, paginationAr.Min.Y, paginationAr.Min.X+prevButtonWidth, paginationAr.Max.Y)
 		if err := draw.Text(cvs, prevButtonText, t.prevButtonRect.Min,
@@ -210,7 +191,7 @@ func (t *Table) Draw(cvs *canvas.Canvas, meta *widgetapi.Meta) error {
 		); err != nil {
 			return err
 		}
-		
+
 		// Draw next button manually with styling
 		t.nextButtonRect = image.Rect(paginationAr.Max.X-nextButtonWidth, paginationAr.Min.Y, paginationAr.Max.X, paginationAr.Max.Y)
 		if err := draw.Text(cvs, nextButtonText, t.nextButtonRect.Min,
@@ -223,7 +204,7 @@ func (t *Table) Draw(cvs *canvas.Canvas, meta *widgetapi.Meta) error {
 		pageIndicator := fmt.Sprintf("Page %d of %d", t.currentPage+1, t.numPages)
 		textAr := image.Rect(t.prevButtonRect.Max.X, cvsAr.Max.Y-1, t.nextButtonRect.Min.X, cvsAr.Max.Y)
 		if err := draw.Text(cvs, pageIndicator,
-			image.Point{X: (textAr.Min.X + textAr.Max.X)/2, Y: textAr.Max.Y-1},
+			image.Point{X: (textAr.Min.X + textAr.Max.X) / 2, Y: textAr.Max.Y - 1},
 			draw.TextCellOpts(cell.BgColor(t.opts.pageIndicatorBgColor), cell.FgColor(t.opts.pageIndicatorFgColor)),
 		); err != nil {
 			return err
@@ -237,7 +218,6 @@ func (t *Table) Draw(cvs *canvas.Canvas, meta *widgetapi.Meta) error {
 
 	return nil
 }
-
 
 func (t *Table) drawRow(cvs *canvas.Canvas, cvsAr image.Rectangle, row []*Cell, colWidth int, curY *int, isHeader bool) error {
 	rowAr := image.Rect(cvsAr.Min.X, *curY, cvsAr.Max.X, *curY+1)
@@ -260,7 +240,7 @@ func (t *Table) drawRow(cvs *canvas.Canvas, cvsAr image.Rectangle, row []*Cell, 
 	for _, c := range row {
 		// Calculate the column area with a small padding
 		colAr := image.Rect(curX+1, rowAr.Min.Y, curX+colWidth-1, rowAr.Max.Y)
-		
+
 		// Now we draw directly to the main canvas.
 		text := c.text
 		if isHeader {
@@ -268,7 +248,7 @@ func (t *Table) drawRow(cvs *canvas.Canvas, cvsAr image.Rectangle, row []*Cell, 
 		}
 
 		// Draw text to the sub-canvas
-		if err := draw.Text(cvs, text, colAr.Min, 
+		if err := draw.Text(cvs, text, colAr.Min,
 			draw.TextCellOpts(cell.FgColor(textColor)),
 		); err != nil {
 			return err
@@ -335,13 +315,13 @@ func (t *Table) Options() widgetapi.Options {
 	if numCols == 0 && len(t.rows) > 0 {
 		numCols = len(t.rows[0])
 	}
-	
+
 	minWidth := numCols * t.opts.minColWidth
 	minHeight := t.rowsPerPage
 	if len(t.headers) > 0 {
 		minHeight++ // Add space for headers
 	}
-	
+
 	// Add space for the buttons and the page indicator.
 	if t.numPages > 1 {
 		minHeight++ // +1 for the button/indicator row
@@ -356,12 +336,12 @@ func (t *Table) Options() widgetapi.Options {
 
 // tableOptions for the Table widget.
 type tableOptions struct {
-	minColWidth         int
-	rowsPerPage         int
-	cellFillColor       cell.Color
-	cellTextColor       cell.Color
-	headerFillColor     cell.Color
-	headerTextColor     cell.Color
+	minColWidth          int
+	rowsPerPage          int
+	cellFillColor        cell.Color
+	cellTextColor        cell.Color
+	headerFillColor      cell.Color
+	headerTextColor      cell.Color
 	pageIndicatorBgColor cell.Color
 	pageIndicatorFgColor cell.Color
 }
@@ -369,12 +349,12 @@ type tableOptions struct {
 // newTableOptions returns a new tableOptions struct with default values.
 func newTableOptions() *tableOptions {
 	return &tableOptions{
-		minColWidth:         10,
-		rowsPerPage:         5, // Default to 5 rows per page
-		cellFillColor:       cell.ColorDefault,
-		cellTextColor:       cell.ColorDefault,
-		headerFillColor:     cell.ColorBlack,
-		headerTextColor:     cell.ColorWhite,
+		minColWidth:          10,
+		rowsPerPage:          5, // Default to 5 rows per page
+		cellFillColor:        cell.ColorDefault,
+		cellTextColor:        cell.ColorDefault,
+		headerFillColor:      cell.ColorBlack,
+		headerTextColor:      cell.ColorWhite,
 		pageIndicatorBgColor: cell.ColorBlack,
 		pageIndicatorFgColor: cell.ColorWhite,
 	}
