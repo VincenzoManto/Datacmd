@@ -157,7 +157,7 @@ layout:
 
 ## Linked resources
 
-Based on `datacmd`, with the team @ Datatripes, we developed our complete and curated [https://github.com/Datastripes/the-data-analyst-toolkit](toolkit for data analysis)
+Based on `datacmd`, with the team @ Datatripes, we developed our complete and curated [toolkit for data analysis](https://github.com/Datastripes/the-data-analyst-toolkit)
 
 ## 🤝 Community
 
