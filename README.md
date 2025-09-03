@@ -1,3 +1,5 @@
+![](https://goreportcard.com/report/github.com/VincenzoManto/Datacmd)
+
 
 # 🪄 Datacmd: auto-generative dashboards from different sources in your CMD
 
@@ -18,6 +20,9 @@ Tired of bloated web UIs? `datacmd` brings data visualization back to where real
 - 🧼 **Zero Setup:** No deps, no bullshit,  just `go run`
 
 > Think of it like `htop` meets `grafana`, but cooler and terminal-native.
+>
+
+It follows my obsession with data, which I developed by building **[https://datastripes.com](Datastripes)**, the web data engine that transform data analysis into simple flows.
 
 ---
 
@@ -151,6 +156,10 @@ layout:
 `datacmd` is the spiritual open source successor to [Datastripes](https://datastripes.com), reimagined with more muscle, more magic, and **zero fluff**.
 
 ---
+
+## Linked resources
+
+Based on `datacmd`, with the team @ Datatripes, we developed our complete and curated [toolkit for data analysis](https://github.com/Datastripes/the-data-analyst-toolkit)
 
 ## 🤝 Community
 
