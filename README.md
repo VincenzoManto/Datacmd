@@ -54,7 +54,7 @@ datacmd.exe --generate --source=your-data.csv
 ### 🛠 Option 2: **Run from source (for Developers)**
 
 ```bash
-git clone https://github.com/VincenzoManto/datacmd.git
+git clone https://github.com/VincenzoManto/Datacmd.git
 cd datacmd
 go mod tidy
 go run main.go --generate --source=your-data.csv
@@ -88,6 +88,8 @@ Data sources supported:
 * 📈 **Line Chart** – Trends, time-series
 * 📡 **Radar** – Multi-metric comparisons
 * 💬 **Text Box** – Notes, alerts, logs
+* 🔢 **Number** – Big, bold KPIs
+* 📊 **Funnel** – Visualize stages in a process
 
 Customize via YAML, or let `--generate` do it all.
 
@@ -96,7 +98,7 @@ Customize via YAML, or let `--generate` do it all.
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/VincenzoManto/datacmd.git
+git clone https://github.com/VincenzoManto/Datacmd.git
 cd datacmd
 go mod tidy
 ```

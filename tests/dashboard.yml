@@ -2,7 +2,7 @@ title: Auto Dashboard for csv
 refresh: 5
 source:
     type: csv
-    path: sample.csv
+    path: ./tests/sample.csv
 widgets:
     - type: table
       title: Table
@@ -41,3 +41,7 @@ widgets:
       title: Text Widget
       aggregation: sum
       value_col: value
+    - type: funnel
+      title: Funnel Chart
+      value_col: value
+      label_col: label

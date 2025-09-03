@@ -167,6 +167,8 @@ func createWidgets(ctx context.Context, config *loader.Config, csvData *loader.D
 			widget, err = createRadarChart(ctx, &w, csvData, config.Refresh)
 		case "table":
 			widget, err = createTable(ctx, &w, csvData, config.Refresh)
+		case "funnel":
+			widget, err = createFunnel(ctx, &w, csvData, config.Refresh)
 		default:
 			textWidget, err := text.New()
 			if err == nil {
@@ -656,25 +658,23 @@ func rollText(ctx context.Context, sd *segmentdisplay.SegmentDisplay, text strin
 
 
 func createRadarChart(ctx context.Context, w *loader.WidgetConfig, csvData *loader.DataDataSource, refresh int) (*widgets.Radar, error) {
-	// Map the CSV columns to radar chart axes.
 	data := make(map[string]float64)
 	for _, record := range csvData.Records {
-		label := record[0] // Assuming the first column contains labels.
-		value, err := strconv.ParseFloat(record[1], 64) // Assuming the second column contains values.
+		label := record[0]
+		value, err := strconv.ParseFloat(record[1], 64)
 		if err != nil {
 			continue
 		}
 		data[label] = value
 	}
 
-	// Determine the maximum value for scaling.
 	max := 0.0
 	for _, value := range data {
 		if value > max {
 			max = value
 		}
 	}
-	// Create the radar chart values.
+	
 	if len(data) == 0 {
 		return nil, fmt.Errorf("no valid data found for radar chart")
 	}
@@ -684,23 +684,48 @@ func createRadarChart(ctx context.Context, w *loader.WidgetConfig, csvData *load
 		Max: max,
 	}
 
-	// Create the radar widget.
+	
 	r, err := widgets.NewRadar()
 	if err != nil {
 		return nil, err
 	}
 
-	// Set the values for the radar chart.
-	// print log
 	if err := r.SetValues(values); err != nil {
 		return nil, err
 	}
 
-	// Periodically update the radar chart if needed.
 	go periodic(ctx, time.Duration(refresh)*time.Second, func() error {
-		// Update logic can be added here if the data changes over time.
 		return nil
 	})
 
 	return r, nil
+}
+
+func createFunnel(ctx context.Context, w *loader.WidgetConfig, csvData *loader.DataDataSource, refresh int) (*widgets.Funnel, error) {
+	data := make([]int, 0)
+	colors := make([]cell.Color, 0)
+
+	for _, record := range csvData.Records {
+		value, err := strconv.Atoi(record[1])
+		if err != nil {
+			continue
+		}
+		data = append(data, value)
+		colors = append(colors, cell.ColorNumber(len(colors)+1))
+	}
+
+	funnel, err := widgets.NewFunnel()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := funnel.Values(data, colors); err != nil {
+		return nil, err
+	}
+
+	go periodic(ctx, time.Duration(refresh)*time.Second, func() error {
+		return nil
+	})
+
+	return funnel, nil
 }
