@@ -168,6 +168,10 @@ func createWidgets(ctx context.Context, config *loader.Config, csvData *loader.D
 			widget, err = createTable(ctx, &w, csvData, config.Refresh)
 		case "funnel":
 			widget, err = createFunnel(ctx, &w, csvData, config.Refresh)
+        case "scatter":
+            widget, err = createScatterPlot(ctx, &w, csvData, config.Refresh)
+        case "histogram":
+            widget, err = createHistogram(ctx, &w, csvData, config.Refresh)
 		default:
 			textWidget, err := text.New()
 			if err == nil {
@@ -335,6 +339,116 @@ func createTable(ctx context.Context, w *loader.WidgetConfig, csvData *loader.Da
 		return nil, fmt.Errorf("error creating table: %w", err)
 	}
 	return table, nil
+}
+
+// createHistogram creates and starts a new histogram widget with alerting.
+func createHistogram(ctx context.Context, w *loader.WidgetConfig, csvData *loader.DataDataSource, refresh int) (*widgets.Histogram, error) {
+	valueColIndex := -1
+	for i, header := range csvData.Header {
+		if header == w.ValueCol {
+			valueColIndex = i
+			break
+		}
+	}
+	if valueColIndex == -1 {
+		return nil, fmt.Errorf("column '%s' not found for widget '%s'", w.ValueCol, w.Title)
+	}
+
+	bins := 10
+	if w.Bins > 0 {
+		bins = w.Bins
+	}
+
+	h, err := widgets.NewHistogram()
+	if err != nil {
+		return nil, err
+	}
+
+	var threshold float64
+	var hasThreshold bool
+	if w.Threshold != 0 {
+		threshold = w.Threshold
+		hasThreshold = true
+	}
+	alertColor := cell.ColorRed
+	if w.AlertColor != 0 {
+		alertColor = cell.ColorNumber(w.AlertColor)
+	}
+	h.SetAlertColor(alertColor)
+
+	go periodic(ctx, time.Duration(refresh)*time.Second, func() error {
+		var values []float64
+		min, max := 0.0, 0.0
+		for i, record := range csvData.Records {
+			v, err := strconv.ParseFloat(record[valueColIndex], 64)
+			if err != nil {
+				continue
+			}
+			values = append(values, v)
+			if i == 0 || v < min {
+				min = v
+			}
+			if i == 0 || v > max {
+				max = v
+			}
+		}
+		if max == min {
+			max = min + 1
+		}
+		binCounts := make([]int, bins)
+		binLabels := make([]string, bins)
+		binWidth := (max - min) / float64(bins)
+		alertBin := -1
+		for _, v := range values {
+			idx := int((v - min) / binWidth)
+			if idx >= bins {
+				idx = bins - 1
+			}
+			binCounts[idx]++
+			if hasThreshold && v >= threshold {
+				alertBin = idx
+			}
+		}
+		for i := 0; i < bins; i++ {
+			binLabels[i] = fmt.Sprintf("%.1f", min+float64(i)*binWidth)
+		}
+		return h.SetBins(binCounts, min, max, binLabels, alertBin)
+	})
+	return h, nil
+}
+// createScatterPlot creates and starts a new scatter plot widget.
+func createScatterPlot(ctx context.Context, w *loader.WidgetConfig, csvData *loader.DataDataSource, refresh int) (*widgets.ScatterPlot, error) {
+	xColIndex, yColIndex := -1, -1
+	for i, header := range csvData.Header {
+		if header == w.XCol {
+			xColIndex = i
+		}
+		if header == w.YCol {
+			yColIndex = i
+		}
+	}
+	if xColIndex == -1 || yColIndex == -1 {
+		return nil, fmt.Errorf("column 'x_col' or 'y_col' not found for widget '%s'", w.Title)
+	}
+
+	sp, err := widgets.NewScatterPlot()
+	if err != nil {
+		return nil, err
+	}
+
+	go periodic(ctx, time.Duration(refresh)*time.Second, func() error {
+		var points []widgets.ScatterPoint
+		for _, record := range csvData.Records {
+			x, err1 := strconv.ParseFloat(record[xColIndex], 64)
+			y, err2 := strconv.ParseFloat(record[yColIndex], 64)
+			if err1 != nil || err2 != nil {
+				continue
+			}
+			points = append(points, widgets.ScatterPoint{X: x, Y: y})
+		}
+		return sp.SetPoints(points, w.XCol, w.YCol)
+	})
+	return sp, nil
 }
 
 // createSparkline creates and starts a new sparkline widget.
