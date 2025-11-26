@@ -30,6 +30,7 @@ type WidgetConfig struct {
 	ZCol        string `yaml:"z_col,omitempty"`
 	CatCol      string `yaml:"cat_col,omitempty"`
 	Aggregation string `yaml:"aggregation,omitempty"`
+	MaxValue    int    `yaml:"max_value,omitempty"`
 }
 
 type Source struct {

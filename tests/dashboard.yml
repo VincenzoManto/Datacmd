@@ -22,8 +22,10 @@ widgets:
       value_col: value
       label_col: label
     - type: gauge
-      title: Gauge
+      title: Average Value
       value_col: value
+      aggregation: avg
+      max_value: 100
     - type: line
       title: Line Chart
       x_col: label

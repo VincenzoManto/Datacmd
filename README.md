@@ -98,6 +98,20 @@ Data sources supported:
 
 Customize via YAML, or let `--generate` do it all.
 
+### Enhanced Gauge Widget
+
+The gauge widget can be used to display aggregated values from your data. You can use the `aggregation` property to specify the aggregation type (`sum`, `avg`, `median`, `max`, `min`). The `max_value` property sets the upper bound for the gauge. If not provided, it's inferred from the data.
+
+Here is an example of a gauge that shows the average CPU usage:
+
+```yaml
+- type: gauge
+  title: "Average CPU Usage"
+  value_col: "cpu_usage_percent"
+  aggregation: "avg"
+  max_value: 100
+```
+
 ---
 
 ## 📦 Installation

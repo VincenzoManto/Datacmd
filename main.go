@@ -388,14 +388,102 @@ func createGauge(ctx context.Context, w *loader.WidgetConfig, csvData *loader.Da
 	}
 
 	go periodic(ctx, time.Duration(refresh)*time.Second, func() error {
-		if len(csvData.Records) > 0 {
-			val, err := strconv.Atoi(csvData.Records[len(csvData.Records)-1][valueColIndex])
+		var values []int
+		for _, record := range csvData.Records {
+			val, err := strconv.Atoi(record[valueColIndex])
 			if err == nil {
-				return g.Percent(val)
+				values = append(values, val)
 			}
 		}
-		return nil
+
+		if len(values) == 0 {
+			return nil // No data to display
+		}
+
+		var finalValue int
+		var label string
+
+		// if aggregation is defined, use it
+		if w.Aggregation != "" {
+			switch w.Aggregation {
+			case "sum":
+				sum := 0
+				for _, v := range values {
+					sum += v
+				}
+				finalValue = sum
+				label = fmt.Sprintf("Sum: %d", finalValue)
+			case "avg":
+				sum := 0
+				for _, v := range values {
+					sum += v
+				}
+				avg := float64(sum) / float64(len(values))
+				finalValue = int(avg)
+				label = fmt.Sprintf("Avg: %.2f", avg)
+			case "median":
+				sort.Ints(values)
+				if len(values)%2 == 0 {
+					finalValue = (values[len(values)/2-1] + values[len(values)/2]) / 2
+				} else {
+					finalValue = values[len(values)/2]
+				}
+				label = fmt.Sprintf("Median: %d", finalValue)
+			case "max":
+				max := values[0]
+				for _, v := range values {
+					if v > max {
+						max = v
+					}
+				}
+				finalValue = max
+				label = fmt.Sprintf("Max: %d", finalValue)
+			case "min":
+				min := values[0]
+				for _, v := range values {
+					if v < min {
+						min = v
+					}
+				}
+				finalValue = min
+				label = fmt.Sprintf("Min: %d", finalValue)
+			default:
+				finalValue = 0 // Or handle as an error
+				label = "Invalid aggregation"
+			}
+		} else {
+			// Fallback to original behavior: show the last value
+			finalValue = values[len(values)-1]
+			label = fmt.Sprintf("Value: %d", finalValue)
+		}
+
+		maxValue := w.MaxValue
+		if maxValue == 0 {
+			// If MaxValue is not set in config, use the max value from the dataset
+			// as a sensible default for percentage calculation.
+			maxValue = 0
+			for _, v := range values {
+				if v > maxValue {
+					maxValue = v
+				}
+			}
+		}
+
+		var percent int
+		if maxValue > 0 {
+			percent = (finalValue * 100) / maxValue
+		}
+
+		// Ensure percent is within 0-100 range
+		if percent > 100 {
+			percent = 100
+		} else if percent < 0 {
+			percent = 0
+		}
+
+		return g.Percent(percent, gauge.Label(label, cell.FgColor(cell.ColorGreen)))
 	})
+
 	return g, nil
 }
 
