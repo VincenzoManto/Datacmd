@@ -1,92 +1,35 @@
-name: Build & Release
+name: Release with GoReleaser
 
 on:
-  workflow_dispatch:
   push:
     tags:
-      - 'v*.*.*'
-
-permissions:
-  contents: write
+      - "*v*"
 
 jobs:
-  build:
+  release:
+    name: 🚀 Build & Publish Release
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+      packages: write
+
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: Setup Go
-        uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
-      
-      # This step sets the TAG_NAME environment variable for subsequent steps.
-      - name: Get Tag Name
-        id: get_tag
-        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-      
-      - name: Set up Go Modules
-        run: go mod tidy
+          fetch-depth: 0
 
-      # Build for Linux (amd64)
-      - name: Build for Linux
-        run: |
-          GOOS=linux GOARCH=amd64 go build -o datacmd-linux
-          chmod +x datacmd-linux
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23"
 
-      # Build for Windows (amd64)
-      - name: Build for Windows
-        run: |
-          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o datacmd-windows.exe
-
-      # Build for macOS (amd64)
-      - name: Build for macOS
-        run: |
-          GOOS=darwin GOARCH=amd64 go build -o datacmd-macos
-
-      # Create the GitHub Release
-      - name: Create GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: latest
+          distribution: goreleaser
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.TAG_NAME }}
-          release_name: Release ${{ env.TAG_NAME }}
-          draft: false
-          prerelease: false
-
-      # Upload the built binary for Linux to the release
-      - name: Upload Linux Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./datacmd-linux
-          asset_name: datacmd-linux
-          asset_content_type: application/octet-stream
-
-      # Upload the built binary for Windows to the release
-      - name: Upload Windows Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./datacmd-windows.exe
-          asset_name: datacmd-windows.exe
-          asset_content_type: application/octet-stream
-      
-      # Upload the built binary for macOS to the release
-      - name: Upload macOS Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./datacmd-macos
-          asset_name: datacmd-macos
-          asset_content_type: application/octet-stream
