@@ -1,6 +1,7 @@
 name: Release with GoReleaser
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - "*v*"
