@@ -9,6 +9,10 @@
 
 ---
 
+### Full documentation
+
+The full documentation is available here: [Datacmd Code Wiki](https://codewiki.google/github.com/vincenzomanto/datacmd)
+
 ## Why you'll love Datacmd
 
 Tired of bloated web UIs? `datacmd` brings data visualization back to where real devs live: **the terminal.**
@@ -202,6 +206,8 @@ Apache 2.0,  free as in freedom and fast as in Go.
     <img src="https://api.star-history.com/svg?repos=VincenzoManto/datacmd&type=Date" alt="Star History Chart">
   </a>
 </p>
+
+The full documentation is available here: [Datacmd Code Wiki](https://codewiki.google/github.com/vincenzomanto/datacmd)
 
 
 ```txt
