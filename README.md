@@ -209,6 +209,7 @@ Apache 2.0,  free as in freedom and fast as in Go.
 
 The full documentation is available here: [Datacmd Code Wiki](https://codewiki.google/github.com/vincenzomanto/datacmd)
 
+<!-- GitAds-Verify: PLNHLOXI6EGI4RDP2573FBME4RLH1WNO -->
 
 ```txt
 
