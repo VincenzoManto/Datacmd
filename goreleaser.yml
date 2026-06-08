@@ -1,0 +1,47 @@
+version: 2
+
+project_name: datacmd
+dist: bin
+
+builds:
+  - id: datacmd
+    main: ./main.go
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+
+  - id: datacmd-win
+    main: ./main.go
+    goos:
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - id: datacmd-archive
+    ids: [datacmd]
+    formats: [tar.gz]
+    name_template: "datacmd_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+
+  - id: datacmd-win-archive
+    ids: [datacmd-win]
+    formats: [zip]
+    name_template: "datacmd_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+
+release:
+  github:
+    owner: VincenzoManto
+    name: datacmd
+
+changelog:
+  use: git
