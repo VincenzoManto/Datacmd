@@ -595,7 +595,7 @@ func createGauge(ctx context.Context, w *loader.WidgetConfig, csvData *loader.Da
 			percent = 0
 		}
 
-		return g.Percent(percent, gauge.Label(label, cell.FgColor(cell.ColorGreen)))
+		return g.Percent(percent, gauge.TextLabel(label))
 	})
 
 	return g, nil

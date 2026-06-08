@@ -30,6 +30,9 @@ type WidgetConfig struct {
 	ZCol        string `yaml:"z_col,omitempty"`
 	CatCol      string `yaml:"cat_col,omitempty"`
 	Aggregation string `yaml:"aggregation,omitempty"`
+	Bins        int    `yaml:"bins,omitempty"`
+	Threshold   float64 `yaml:"threshold,omitempty"`
+	AlertColor  int    `yaml:"alert_color,omitempty"`
 	MaxValue    int    `yaml:"max_value,omitempty"`
 }
 
