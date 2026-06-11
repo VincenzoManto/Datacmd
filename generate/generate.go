@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -100,11 +101,42 @@ func (j *JSONDataSource) Load() (*DataDataSource, error) {
 		return nil, fmt.Errorf("unable to read JSON file: %w", err)
 	}
 
+	var rawRecords []map[string]interface{}
+	if err := json.Unmarshal(fileData, &rawRecords); err == nil && len(rawRecords) > 0 {
+		return objectArrayToDataSource(rawRecords), nil
+	}
+
 	var data DataDataSource
 	if err := json.Unmarshal(fileData, &data); err != nil {
 		return nil, fmt.Errorf("unable to parse JSON file: %w", err)
 	}
 	return &data, nil
+}
+
+func objectArrayToDataSource(records []map[string]interface{}) *DataDataSource {
+	keySet := make(map[string]struct{})
+	for _, record := range records {
+		for k := range record {
+			keySet[k] = struct{}{}
+		}
+	}
+	headers := make([]string, 0, len(keySet))
+	for k := range keySet {
+		headers = append(headers, k)
+	}
+	sort.Strings(headers)
+
+	rows := make([][]string, 0, len(records))
+	for _, record := range records {
+		row := make([]string, len(headers))
+		for i, h := range headers {
+			if v, ok := record[h]; ok {
+				row[i] = fmt.Sprintf("%v", v)
+			}
+		}
+		rows = append(rows, row)
+	}
+	return &DataDataSource{Header: headers, Records: rows}
 }
 
 // APIDataSource handles loading data from an API.
@@ -126,6 +158,11 @@ func (a *APIDataSource) Load() (*DataDataSource, error) {
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read response body: %w", err)
+	}
+
+	var rawRecords []map[string]interface{}
+	if err := json.Unmarshal(body, &rawRecords); err == nil && len(rawRecords) > 0 {
+		return objectArrayToDataSource(rawRecords), nil
 	}
 
 	var data DataDataSource

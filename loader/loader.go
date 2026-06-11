@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"sort"
 
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
@@ -95,6 +96,11 @@ func (j *JSONDataSource) Load() (*DataDataSource, error) {
 		return nil, fmt.Errorf("Unable to read JSON file: %w", err)
 	}
 
+	var rawRecords []map[string]interface{}
+	if err := json.Unmarshal(fileData, &rawRecords); err == nil && len(rawRecords) > 0 {
+		return objectArrayToDataSource(rawRecords), nil
+	}
+
 	var data DataDataSource
 	if err := json.Unmarshal(fileData, &data); err != nil {
 		return nil, fmt.Errorf("Unable to parse JSON file: %w", err)
@@ -122,11 +128,42 @@ func (a *APIDataSource) Load() (*DataDataSource, error) {
 		return nil, fmt.Errorf("Unable to read response body: %w", err)
 	}
 
+	var rawRecords []map[string]interface{}
+	if err := json.Unmarshal(body, &rawRecords); err == nil && len(rawRecords) > 0 {
+		return objectArrayToDataSource(rawRecords), nil
+	}
+
 	var data DataDataSource
 	if err := json.Unmarshal(body, &data); err != nil {
 		return nil, fmt.Errorf("Unable to decode API JSON response: %w", err)
 	}
 	return &data, nil
+}
+
+func objectArrayToDataSource(records []map[string]interface{}) *DataDataSource {
+	keySet := make(map[string]struct{})
+	for _, record := range records {
+		for k := range record {
+			keySet[k] = struct{}{}
+		}
+	}
+	headers := make([]string, 0, len(keySet))
+	for k := range keySet {
+		headers = append(headers, k)
+	}
+	sort.Strings(headers)
+
+	rows := make([][]string, 0, len(records))
+	for _, record := range records {
+		row := make([]string, len(headers))
+		for i, h := range headers {
+			if v, ok := record[h]; ok {
+				row[i] = fmt.Sprintf("%v", v)
+			}
+		}
+		rows = append(rows, row)
+	}
+	return &DataDataSource{Header: headers, Records: rows}
 }
 
 // SystemMetricsDataSource handles loading system metrics.
@@ -162,7 +199,13 @@ func LoadConfigAndData(configPath string) (*Config, *DataDataSource, error) {
 
 	var config Config
 	if err := yaml.Unmarshal(configData, &config); err != nil {
-		return nil, nil, fmt.Errorf("Unable to parse YAML config file: %w", err)
+		// Fall back: config file may be a bare list of widget configs
+		var widgets []WidgetConfig
+		if err2 := yaml.Unmarshal(configData, &widgets); err2 != nil || len(widgets) == 0 {
+			return nil, nil, fmt.Errorf("Unable to parse YAML config file: %w", err)
+		}
+		config.Widgets = widgets
+		config.Source.Type = "system"
 	}
 
 	var dataSource DataSource
